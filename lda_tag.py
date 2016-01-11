@@ -13,10 +13,9 @@ import json
 from sklearn.feature_extraction.text import TfidfVectorizer, CountVectorizer
 from sklearn.decomposition import LatentDirichletAllocation
 
-n_samples = 2000
 n_features = 1000
-n_topics = 10
-n_top_words = 20
+n_topics = 100
+n_top_words = 5
 
 
 def print_top_words(model, feature_names, n_top_words):
@@ -34,9 +33,9 @@ with open('noaa_data.json', 'rb') as f:
     noaa = json.load(f)
 data_samples = []
 for entry in noaa:
-    data_samples.append(entry[u'description'])
-    data_samples.extend(entry[u'keyword'])
-    data_samples.extend(entry[u'title'])
+    title = ' '.join(filter(lambda x: x.isalpha(), entry[u'title'].split()))
+    description = ' '.join(filter(lambda x: x.isalpha(), entry[u'description'].split()))
+    data_samples.append(title+" "+description+' '.join(filter(lambda x: x.isalpha(), entry[u'keyword']))+"\n")
 
 print("done in %0.3fs." % (time() - t0))
 
@@ -90,7 +89,7 @@ print("done in %0.3fs." % (time() - t0))
 
 # Fit the LDA model
 print("Fitting LDA models with tf features, n_samples=%d and n_features=%d..."
-      % (n_samples, n_features))
+      % (len(data_samples), n_features))
 lda = LatentDirichletAllocation(n_topics=n_topics, max_iter=5,
                                 learning_method='online', learning_offset=50.,
                                 random_state=0)
