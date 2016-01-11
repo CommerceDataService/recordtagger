@@ -12,13 +12,13 @@ from time import time
 
 import re
 import json
+import string
 from sklearn.feature_extraction.text import TfidfVectorizer, CountVectorizer
 from sklearn.decomposition import NMF
 
-n_samples = 2000
 n_features = 1000
-n_topics = 10
-n_top_words = 20
+n_topics = 200
+n_top_words = 10
 
 def print_top_words(model, feature_names, n_top_words):
     for topic_idx, topic in enumerate(model.components_):
@@ -34,9 +34,9 @@ with open('noaa_data.json', 'rb') as f:
     noaa = json.load(f)
 data_samples = []
 for entry in noaa:
-    data_samples.append(entry[u'description'])
-    data_samples.extend(entry[u'keyword'])
-    data_samples.extend(entry[u'title'])
+    title = ' '.join(filter(lambda x: x.isalpha(), entry[u'title'].split()))
+    description = ' '.join(filter(lambda x: x.isalpha(), entry[u'description'].split()))
+    data_samples.append(title+" "+description+' '.join(filter(lambda x: x.isalpha(), entry[u'keyword']))+"\n")
 
 print("done in %0.3fs." % (time() - t0))
 
@@ -82,7 +82,7 @@ stopwords = ["a", "about", "above", "above", "across", "after", "afterwards", "a
 
 # Use tf-idf features for NMF.
 print("Extracting tf-idf features for NMF...")
-tfidf_vectorizer = TfidfVectorizer(ngram_range=(1,2), max_df=0.95, min_df=2,
+tfidf_vectorizer = TfidfVectorizer(ngram_range=(1,1), max_df=0.95, min_df=2,
                                    stop_words=stopwords)
 t0 = time()
 
@@ -92,7 +92,7 @@ print("done in %0.3fs." % (time() - t0))
 # Fit the NMF model
 print("Fitting the NMF model with tf-idf features,"
       "n_samples=%d and n_features=%d..."
-      % (n_samples, n_features))
+      % (len(data_samples), n_features))
 t0 = time()
 nmf = NMF(n_components=n_topics, random_state=1, alpha=.1, l1_ratio=.5).fit(tfidf)
 print("done in %0.3fs." % (time() - t0))
