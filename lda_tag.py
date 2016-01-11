@@ -13,9 +13,9 @@ import json
 from sklearn.feature_extraction.text import TfidfVectorizer, CountVectorizer
 from sklearn.decomposition import LatentDirichletAllocation
 
-n_features = 1000
-n_topics = 100
-n_top_words = 5
+n_features = 2000
+n_topics = 200
+n_top_words = 30
 
 
 def print_top_words(model, feature_names, n_top_words):
@@ -76,7 +76,7 @@ stopwords = ["a", "about", "above", "above", "across", "after", "afterwards", "a
              "yours", "yourself", "yourselves", "the", "0", "1", "2", "3", "4", "5", "6", "7", "8", \
              "9","10","2000","2001","2002","2003","2004","2005","2006","2007","2008","2009","2010",\
              "2011","2012","2013","2014","2015","department","commerce","doc","noaa","national",\
-             "data", "centers", "united", "states"]
+             "data", "centers", "united", "states", "administration"]
 
 
 # Use tf (raw term count) features for LDA.
