@@ -67,7 +67,7 @@ def wrangle_data(json_data):
     for entry in json_data:
         title = ' '.join(filter(lambda x: x.isalpha(), entry[u'title'].split()))
         description = ' '.join(filter(lambda x: x.isalpha(), entry[u'description'].split()))
-        data_samples.append(title+" "+description+' '.join(filter(lambda x: x.isalpha(), entry[u'keyword']))+"\n")
+        data_samples.append(title+" "+description+' '.join(filter(lambda x: x.isalpha(), entry[u'keyword']))+" ")
     return data_samples
 
 if __name__ == '__main__':
@@ -83,8 +83,8 @@ if __name__ == '__main__':
     # Restart the clock
     t0 = time()
 
-    # Extract term frequency, inverse document-frequency features
-    print("Extracting tf-idf features for NMF...")
+    # Extract term-frequency, inverse document-frequency features
+    print("Extracting term-frequency, inverse document-frequency features for NMF...")
     tfidf_vectorizer = TfidfVectorizer(ngram_range=(1,1), max_df=0.95, min_df=2,
                                        stop_words=stopwords)
 
@@ -95,7 +95,7 @@ if __name__ == '__main__':
     t0 = time()
 
     # Fit the non-negative matrix factorization model
-    print("Fitting the NMF model with tf-idf features,"
+    print("Fitting the NMF model with term-frequency, inverse document-frequency features."
           "n_samples=%d and n_features=%d..."
           % (len(noaa_samples), n_features))
 

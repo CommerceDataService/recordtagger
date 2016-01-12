@@ -27,8 +27,8 @@ from sklearn.decomposition import LatentDirichletAllocation
 #####################################################################
 # Global Variables
 #####################################################################
-n_features = 1000
-n_topics = 20
+n_features = 20000
+n_topics = 200
 n_top_words = 30
 
 domain_stops = ["department","commerce","doc","noaa","national", "data", \
@@ -68,7 +68,7 @@ def wrangle_data(json_data):
     for entry in json_data:
         title = ' '.join(filter(lambda x: x.isalpha(), entry[u'title'].split()))
         description = ' '.join(filter(lambda x: x.isalpha(), entry[u'description'].split()))
-        data_samples.append(title+" "+description+' '.join(filter(lambda x: x.isalpha(), entry[u'keyword']))+"\n")
+        data_samples.append(title+" "+description+' '.join(filter(lambda x: x.isalpha(), entry[u'keyword']))+" ")
     return data_samples
 
 
@@ -86,7 +86,7 @@ if __name__ == '__main__':
     t0 = time()
 
     # Extract raw term counts to compute term frequency.
-    print("Extracting tf features for LDA...")
+    print("Extracting term frequency features for LDA...")
     tf_vectorizer = CountVectorizer(max_df=0.95, min_df=2, max_features=n_features,
                                     stop_words=stopwords)
     tf = tf_vectorizer.fit_transform(noaa_samples)
@@ -96,7 +96,7 @@ if __name__ == '__main__':
     t0 = time()
 
     # Fit the LDA model
-    print("Fitting LDA models with tf features, n_samples=%d and n_features=%d..."
+    print("Fitting LDA model with term frequency features, n_samples=%d and n_features=%d..."
         % (len(noaa_samples), n_features))
     lda = LatentDirichletAllocation(n_topics=n_topics, max_iter=5, learning_offset=50.,
                                     random_state=0)
