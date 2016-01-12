@@ -7,7 +7,7 @@
 In NMF, time complexity is polynomial.
 """
 
-from __future__ import print_function
+from __future__ import print_function # Not necessary for Python 3
 from time import time
 
 import re

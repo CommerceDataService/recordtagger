@@ -5,7 +5,7 @@
 In LDA, time complexity is proportional to (n_samples * iterations).
 """
 
-from __future__ import print_function
+from __future__ import print_function  # Not necessary for Python 3
 from time import time
 
 import re
