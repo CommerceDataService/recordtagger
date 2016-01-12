@@ -13,6 +13,7 @@ from time import time
 import re
 import json
 import string
+import requests
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.decomposition import NMF
 
@@ -30,9 +31,8 @@ def print_top_words(model, feature_names, n_top_words):
 print("Loading dataset...")
 t0 = time()
 
-# TODO ingest directly from https://data.noaa.gov/data.json
-with open('noaa_data.json', 'rb') as f:
-    noaa = json.load(f)
+r = requests.get("https://data.noaa.gov/data.json")
+noaa = r.json()
 data_samples = []
 for entry in noaa:
     title = ' '.join(filter(lambda x: x.isalpha(), entry[u'title'].split()))
