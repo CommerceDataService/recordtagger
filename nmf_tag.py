@@ -67,7 +67,8 @@ def wrangle_data(json_data):
     for entry in json_data:
         title = ' '.join(filter(lambda x: x.isalpha(), entry[u'title'].split()))
         description = ' '.join(filter(lambda x: x.isalpha(), entry[u'description'].split()))
-        data_samples.append(title+" "+description+' '.join(filter(lambda x: x.isalpha(), entry[u'keyword']))+" ")
+        keywords = " ".join(filter(lambda x: x.isalpha(), entry[u'keyword']))
+        data_samples.append(title+" "+description+" "+keywords)
     return data_samples
 
 if __name__ == '__main__':

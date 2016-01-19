@@ -66,15 +66,17 @@ def wrangle_data(json_data):
     """
     data_samples = []
     for entry in json_data:
-        title = ' '.join(filter(lambda x: x.isalpha(), entry[u'title'].split()))
-        description = ' '.join(filter(lambda x: x.isalpha(), entry[u'description'].split()))
-        data_samples.append(title+" "+description+' '.join(filter(lambda x: x.isalpha(), entry[u'keyword']))+" ")
+        title = " ".join(filter(lambda x: x.isalpha(), entry[u'title'].split()))
+        description = " ".join(filter(lambda x: x.isalpha(), entry[u'description'].split()))
+        keywords = " ".join(filter(lambda x: x.isalpha(), entry[u'keyword']))
+        data_samples.append(title+" "+description+" "+keywords)
     return data_samples
 
 
 if __name__ == '__main__':
     # Start the clock
     t0 = time()
+    print("Benchmark at %d features" % n_features)
 
     # Load the data
     print("Loading dataset...")
@@ -87,7 +89,7 @@ if __name__ == '__main__':
 
     # Extract raw term counts to compute term frequency.
     print("Extracting term frequency features for LDA...")
-    tf_vectorizer = CountVectorizer(max_df=0.95, min_df=2, max_features=n_features,
+    tf_vectorizer = CountVectorizer(max_df=0.95, min_df=2, #ngram_range=(1,2),
                                     stop_words=stopwords)
     tf = tf_vectorizer.fit_transform(noaa_samples)
     print("done in %0.3fs." % (time() - t0))
