@@ -153,10 +153,12 @@ if __name__ == '__main__':
 
         results = lda.transform(tf)
         for i in range(len(results)):
-            best_results = (-results[i]).argsort()[:5]
-            keywords = []
-            for x in np.nditer(best_results):
-                keywords.append(get_words(tf_feature_names, x))
-            writer.writerow([i, noaa_samples[i], best_results, keywords])
+            try:
+                best_results = (-results[i]).argsort()[:5]
+                keywords = []
+                for x in np.nditer(best_results):
+                    keywords.append(get_words(tf_feature_names, x))
+                writer.writerow([i, noaa_samples[i], best_results, keywords])
+            except UnicodeEncodeError: pass
 
         print("done in %0.3fs." % (time() - t0))
