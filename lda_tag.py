@@ -126,7 +126,7 @@ if __name__ == '__main__':
 
         # Print out the clusters
         tf_feature_names = tf_vectorizer.get_feature_names()
-        print_clusters(lda, tfidf_feature_names, n_top_words)
+        print_clusters(lda, tf_feature_names, n_top_words)
 
         # Save the clusters
         for x in save_clusters(lda, tf_feature_names, n_top_words):
