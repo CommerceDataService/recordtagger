@@ -21,6 +21,7 @@ import re
 import csv
 import json
 import requests
+import numpy as np
 from sklearn.feature_extraction import text
 from sklearn.feature_extraction.text import CountVectorizer
 from sklearn.decomposition import LatentDirichletAllocation
@@ -40,18 +41,6 @@ stopwords = text.ENGLISH_STOP_WORDS.union(domain_stops)
 #####################################################################
 # Helper Functions
 #####################################################################
-def print_clusters(model, feature_names, n_top_words):
-    """
-    Takes the model, the names of the features, and the
-    requested number of top words for each cluster, and
-    prints out each cluster.
-    """
-    for topic_idx, topic in enumerate(model.components_):
-        print("Topic #%d:" % (topic_idx+1))
-        print(" ".join([feature_names[i]
-                        for i in topic.argsort()[:-n_top_words - 1:-1]]))
-    print()
-
 def save_clusters(model, feature_names, n_top_words):
     """
     Takes the model, the names of the features, and the
@@ -66,6 +55,28 @@ def save_clusters(model, feature_names, n_top_words):
         for i in y:
             topwords.append(feature_names[i].encode('utf-8'))
         yield t,topwords
+
+def get_words(feature_names,cluster_id):
+    """
+    Just return the words for a given cluster, with given feature_names.
+    """
+    words = []
+    for topic_idx, topic in enumerate(lda.components_):
+        if topic_idx == cluster_id:
+            words.append(" ".join([tf_feature_names[i].encode('utf-8') for i in topic.argsort()[:-31:-1]]))
+    return words
+
+def print_clusters(model, feature_names, n_top_words):
+    """
+    Takes the model, the names of the features, and the
+    requested number of top words for each cluster, and
+    prints out each cluster.
+    """
+    for topic_idx, topic in enumerate(model.components_):
+        print("Topic #%d:" % (topic_idx+1))
+        print(" ".join([feature_names[i]
+                        for i in topic.argsort()[:-n_top_words - 1:-1]]))
+    print()
 
 def load_data(URL):
     """
@@ -124,10 +135,28 @@ if __name__ == '__main__':
         lda.fit(tf)
         print("done in %0.3fs." % (time() - t0))
 
-        # Print out the clusters
-        tf_feature_names = tf_vectorizer.get_feature_names()
-        print_clusters(lda, tf_feature_names, n_top_words)
-
         # Save the clusters
+        tf_feature_names = tf_vectorizer.get_feature_names()
         for x in save_clusters(lda, tf_feature_names, n_top_words):
             writer.writerow([str(x[0]),str(x[1])])
+
+        # # You can also pring out the clusters if you want to see them
+        # print_clusters(lda, tf_feature_names, n_top_words)
+
+    # Now match up the records with the best fit clusters & corresponding keywords
+    with open('records_to_ldaclusters.csv', 'wb') as f2:
+        writer = csv.writer(f2)
+        writer.writerow(["record_index","record_text","five_best_clusters","suggested_keywords"])
+
+        # Restart the clock
+        t0 = time()
+
+        results = lda.transform(tf)
+        for i in range(len(results)):
+            best_results = (-results[i]).argsort()[:5]
+            keywords = []
+            for x in np.nditer(best_results):
+                keywords.append(get_words(tf_feature_names, x))
+            writer.writerow([i, noaa_samples[i], best_results, keywords])
+
+        print("done in %0.3fs." % (time() - t0))
