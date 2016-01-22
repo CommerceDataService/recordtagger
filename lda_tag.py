@@ -30,7 +30,7 @@ from sklearn.decomposition import LatentDirichletAllocation
 # Global Variables
 #####################################################################
 n_features = 200000
-n_topics = 200
+n_topics = 50
 n_top_words = 30
 
 domain_stops = ["department","commerce","doc","noaa","national", "data", \
@@ -101,7 +101,7 @@ def wrangle_data(json_data):
 
 
 if __name__ == '__main__':
-    with open('lda_clusters.csv', 'wb') as f1:
+    with open('lda_clusters_v2.csv', 'wb') as f1:
         writer = csv.writer(f1)
         writer.writerow(["cluster","top words"])
 
@@ -144,7 +144,7 @@ if __name__ == '__main__':
         # print_clusters(lda, tf_feature_names, n_top_words)
 
     # Now match up the records with the best fit clusters & corresponding keywords
-    with open('records_to_ldaclusters.csv', 'wb') as f2:
+    with open('records_to_ldaclusters_v2.csv', 'wb') as f2:
         writer = csv.writer(f2)
         writer.writerow(["record_index","record_text","five_best_clusters","suggested_keywords"])
 
