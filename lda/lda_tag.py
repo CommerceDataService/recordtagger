@@ -1,3 +1,4 @@
+#!/usr/bin/python
 # lda_tag.py
 #
 #
@@ -157,8 +158,12 @@ if __name__ == '__main__':
                 best_results = (-results[i]).argsort()[:5]
                 keywords = []
                 for x in np.nditer(best_results):
+                    #TODO => if keyword not in noaa_samples[i]
+                    # because we don't want to add words that are already in the description,
+                    # title or keyword fields
                     keywords.append(get_words(tf_feature_names, x))
                 writer.writerow([i, noaa_samples[i], best_results, keywords])
+            #TODO => need to figure out the Unicode Error    
             except UnicodeEncodeError: pass
 
         print("done in %0.3fs." % (time() - t0))
