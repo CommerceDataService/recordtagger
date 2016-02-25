@@ -6,4 +6,5 @@ lda_clusters.txt
 records_to_ldaclusters.csv
 lda_clusters_v2.csv
 records_to_ldaclusters_v2.csv
+lda_tag_recommendations.csv
 venv/
