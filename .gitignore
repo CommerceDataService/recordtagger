@@ -1,5 +1,7 @@
 noaa_data.json
 feature_names.json
 lda_clusters.csv
+lda_clusters_v2.csv
 lda_clusters.txt
 records_to_ldaclusters.csv
+records_to_ldaclusters_v2.csv
