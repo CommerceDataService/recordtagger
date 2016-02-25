@@ -4,7 +4,8 @@
 #
 # Title:        Topic extraction using Latent Dirichlet Allocation
 # Author:       Rebecca Bilbro
-# Date:         1/9/16
+# Version:      1.1
+# Date:         last updated 2/25/16
 # Organization: Commerce Data Service, U.S. Department of Commerce
 
 
@@ -151,6 +152,7 @@ if __name__ == '__main__':
 
         # Restart the clock
         t0 = time()
+        print("Finding the best keywords for each record and writing up results...")
 
         results = lda.transform(tf)
         for i in range(len(results)):
@@ -158,12 +160,10 @@ if __name__ == '__main__':
                 best_results = (-results[i]).argsort()[:5]
                 keywords = []
                 for x in np.nditer(best_results):
-                    #TODO => if keyword not in noaa_samples[i]
-                    # because we don't want to add words that are already in the description,
-                    # title or keyword fields
-                    keywords.append(get_words(tf_feature_names, x))
-                writer.writerow([i, noaa_samples[i], best_results, keywords])
-            #TODO => need to figure out the Unicode Error    
+                    keywords.extend(get_words(tf_feature_names, x))
+                flattened = " ".join(keywords)
+                writer.writerow([i, noaa_samples[i], best_results, flattened])
+            #TODO => need to figure out the Unicode Error
             except UnicodeEncodeError: pass
 
         print("done in %0.3fs." % (time() - t0))
