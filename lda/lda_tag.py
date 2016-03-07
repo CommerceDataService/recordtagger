@@ -4,8 +4,8 @@
 #
 # Title:        Topic extraction using Latent Dirichlet Allocation
 # Author:       Rebecca Bilbro
-# Version:      1.1
-# Date:         last updated 2/25/16
+# Version:      2.0
+# Date:         last updated 3/7/16
 # Organization: Commerce Data Service, U.S. Department of Commerce
 
 
@@ -22,6 +22,7 @@ from time import time
 import re
 import csv
 import json
+import pymongo
 import requests
 import numpy as np
 from sklearn.feature_extraction import text
@@ -31,6 +32,10 @@ from sklearn.decomposition import LatentDirichletAllocation
 #####################################################################
 # Global Variables
 #####################################################################
+conn=pymongo.MongoClient()
+db = conn.earthwindfire
+noaa_coll = db.noaa_coll
+
 n_features = 200000
 n_topics = 50
 n_top_words = 30
@@ -43,7 +48,7 @@ stopwords = text.ENGLISH_STOP_WORDS.union(domain_stops)
 #####################################################################
 # Helper Functions
 #####################################################################
-def save_clusters(model, feature_names, n_top_words):
+def saveClusters(model, feature_names, n_top_words):
     """
     Takes the model, the names of the features, and the
     requested number of top words for each cluster, and
@@ -58,7 +63,7 @@ def save_clusters(model, feature_names, n_top_words):
             topwords.append(feature_names[i].encode('utf-8'))
         yield t,topwords
 
-def get_words(feature_names,cluster_id):
+def getWords(feature_names,cluster_id):
     """
     Just return the words for a given cluster, with given feature_names.
     """
@@ -68,7 +73,7 @@ def get_words(feature_names,cluster_id):
             words.append(" ".join([tf_feature_names[i].encode('utf-8') for i in topic.argsort()[:-31:-1]]))
     return words
 
-def print_clusters(model, feature_names, n_top_words):
+def printClusters(model, feature_names, n_top_words):
     """
     Takes the model, the names of the features, and the
     requested number of top words for each cluster, and
@@ -80,24 +85,33 @@ def print_clusters(model, feature_names, n_top_words):
                         for i in topic.argsort()[:-n_top_words - 1:-1]]))
     print()
 
-def load_data(URL):
+def loadData(URL,collection):
     """
-    Loads the data from URL and returns data in JSON format.
+    Loads the JSON data from URL, connects to MongoDB & enters dicts into collection
     """
-    r = requests.get(URL)
-    data = r.json()
-    return data
+    if collection.count() > 20000:
+        print("%d records already loaded" % collection.count())
+    else:
+        r = requests.get(URL)
+        json_data = r.json()
+        for dataset in json_data:
+            data ={}
+            data["title"] = dataset["title"]
+            data["description"] = dataset["description"]
+            data["keywords"] = dataset["keyword"]
+            collection.insert_one(data)
+        print("Successfully loaded %d records into MongoDB." % collection.count())
 
-def wrangle_data(json_data):
+def wrangleData(collection):
     """
-    Takes JSON input data, extracts and joins the content from the relevant
+    Reads in MongoDB documents, extracts and joins the content from the relevant
     fields for each record (keyword, title, description) and returns a list.
     """
     data_samples = []
-    for entry in json_data:
+    for entry in collection.find():
         title = " ".join(filter(lambda x: x.isalpha(), entry[u'title'].split()))
         description = " ".join(filter(lambda x: x.isalpha(), entry[u'description'].split()))
-        keywords = " ".join(filter(lambda x: x.isalpha(), entry[u'keyword']))
+        keywords = " ".join(filter(lambda x: x.isalpha(), entry[u'keywords']))
         data_samples.append(title+" "+description+" "+keywords)
     return data_samples
 
@@ -110,12 +124,12 @@ if __name__ == '__main__':
         # Start the clock
         t0 = time()
 
-        # Load the data
-        print("Loading dataset...")
-        noaa = load_data("https://data.noaa.gov/data.json")
-        noaa_samples = wrangle_data(noaa)
-        print("done in %0.3fs." % (time() - t0))
+        # Load the data into MongoDB
+        print("Checking to see if you have the data...")
+        loadData("https://data.noaa.gov/data.json",noaa_coll)
 
+        noaa_samples = wrangleData(noaa_coll)
+        print("done in %0.3fs." % (time() - t0))
         # Restart the clock
         t0 = time()
 
@@ -139,11 +153,11 @@ if __name__ == '__main__':
 
         # Save the clusters
         tf_feature_names = tf_vectorizer.get_feature_names()
-        for x in save_clusters(lda, tf_feature_names, n_top_words):
+        for x in saveClusters(lda, tf_feature_names, n_top_words):
             writer.writerow([str(x[0]),str(x[1])])
 
         # # You can also pring out the clusters if you want to see them
-        # print_clusters(lda, tf_feature_names, n_top_words)
+        # printClusters(lda, tf_feature_names, n_top_words)
 
     # Now match up the records with the best fit clusters & corresponding keywords
     with open('records_to_ldaclusters_v2.csv', 'wb') as f2:
@@ -160,7 +174,7 @@ if __name__ == '__main__':
                 best_results = (-results[i]).argsort()[:5]
                 keywords = []
                 for x in np.nditer(best_results):
-                    keywords.extend(get_words(tf_feature_names, x))
+                    keywords.extend(getWords(tf_feature_names, x))
                 flattened = " ".join(keywords)
                 writer.writerow([i, noaa_samples[i], best_results, flattened])
             #TODO => need to figure out the Unicode Error
